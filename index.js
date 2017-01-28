@@ -15,7 +15,7 @@ import Style from './style';
 import Moment from 'moment';
 
 const FORMATS = {
-  'date': 'YYYY-MM-DD',
+  'date': 'DD MMM YY',
   'datetime': 'YYYY-MM-DD HH:mm',
   'time': 'HH:mm'
 };
@@ -120,12 +120,37 @@ class DatePicker extends Component {
   }
 
   getDateStr(date = this.props.date) {
-    const {mode, format = FORMATS[mode]} = this.props;
+    const {mode, format = FORMATS[mode], lang} = this.props;
 
-    if (date instanceof Date) {
-      return Moment(date).format(format);
+    if (lang === 'th') {
+      require('moment/locale/th');
+      Moment.locale('th');
     } else {
-      return Moment(this.getDate(date)).format(format);
+      Moment.locale('en');
+    }
+
+    const dateFormat = this.getDateFormat(date, format, mode, lang);
+
+    if (mode === 'time' && lang === 'th') {
+      return `${dateFormat} น.`;
+    }
+
+    return dateFormat;
+  }
+
+  getDateFormat(date, format, mode, lang = 'en') {
+    if (mode === 'date' && lang === 'th') {
+      if (date instanceof Date) {
+        return Moment(date).format(format);
+      } else {
+        return Moment(this.getDate(date)).add(543, 'years').format(format);
+      }
+    } else {
+      if (date instanceof Date) {
+        return Moment(date).format(format);
+      } else {
+        return Moment(this.getDate(date)).format(format);
+      }
     }
   }
 
@@ -363,7 +388,8 @@ DatePicker.propTypes = {
   onDateChange: React.PropTypes.func,
   placeholder: React.PropTypes.string,
   modalOnResponderTerminationRequest: React.PropTypes.func,
-  is24Hour: React.PropTypes.bool
+  is24Hour: React.PropTypes.bool,
+  lang: React.PropTypes.string
 };
 
 export default DatePicker;
